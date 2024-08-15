@@ -18,7 +18,7 @@ from PIL import Image
 from src.models.unet_2d_condition import UNet2DConditionModel
 from src.models.unet_3d_echo import EchoUNet3DConditionModel
 from src.models.whisper.audio2feature import load_audio_model
-from src.pipelines.pipeline_echo_mimic import Audio2VideoPipeline
+from src.pipelines.pipeline_echo_mimic_acc import Audio2VideoPipeline
 from src.utils.util import save_videos_grid, crop_and_pad
 from src.models.face_locator import FaceLocator
 from moviepy.editor import VideoFileClip, AudioFileClip
@@ -51,7 +51,7 @@ elif ffmpeg_path not in os.getenv('PATH'):
     os.environ["PATH"] = f"{ffmpeg_path}:{os.environ['PATH']}"
 
 
-config_path = "./configs/prompts/animation.yaml"
+config_path = "./configs/prompts/animation_acc.yaml"
 config = OmegaConf.load(config_path)
 if config.weight_dtype == "fp16":
     weight_dtype = torch.float16
@@ -164,8 +164,8 @@ def process_video(uploaded_img, uploaded_audio, width, height, length, seed, fac
         r_pad_crop = int((re - rb) * facecrop_dilation_ratio)
         c_pad_crop = int((ce - cb) * facecrop_dilation_ratio)
         crop_rect = [max(0, cb - c_pad_crop), max(0, rb - r_pad_crop), min(ce + c_pad_crop, face_img.shape[1]), min(re + r_pad_crop, face_img.shape[0])]
-        face_img = crop_and_pad(face_img, crop_rect)
-        face_mask = crop_and_pad(face_mask, crop_rect)
+        face_img,_ = crop_and_pad(face_img, crop_rect)
+        face_mask,_ = crop_and_pad(face_mask, crop_rect)
         face_img = cv2.resize(face_img, (width, height))
         face_mask = cv2.resize(face_mask, (width, height))
 
